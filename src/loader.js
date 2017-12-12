@@ -107,7 +107,15 @@ export function pitch(request) {
         }
         this[NS](text, query);
         if (text.locals && typeof resultSource !== 'undefined') {
-          resultSource += `\nmodule.exports = ${JSON.stringify(text.locals)};`;
+          const providedExports = ['default'];
+          resultSource += `\nexport default ${JSON.stringify(text.locals)};`;
+          Object.keys(text.locals).forEach((key) => {
+            if (!key.includes('-')) {
+              resultSource += `\nexport const ${key} = "${text.locals[key]}";`;
+              providedExports.push(key);
+            }
+          });
+          this._module.providedExports = providedExports;
         }
       } catch (e) {
         return callback(e);
